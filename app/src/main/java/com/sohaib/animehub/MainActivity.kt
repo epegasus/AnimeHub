@@ -4,8 +4,8 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import com.sohaib.animehub.navigation.MainNavGraph
-import com.sohaib.animehub.ui.theme.AnimeHubTheme
+import com.sohaib.animehub.core_design.AnimeHubTheme
+import com.sohaib.animehub.navigation.NavGraph
 
 class MainActivity : ComponentActivity() {
 
@@ -14,7 +14,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             AnimeHubTheme {
-                MainNavGraph()
+                NavGraph()
             }
         }
     }

@@ -1,5 +1,7 @@
 package com.sohaib.animehub.navigation
 
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -10,16 +12,21 @@ import com.sohaib.animehub.feature_splash.SPLASH_ROUTE
 import com.sohaib.animehub.feature_splash.SplashScreen
 
 @Composable
-fun MainNavGraph(modifier: Modifier = Modifier) {
+fun NavGraph(modifier: Modifier = Modifier) {
 
     val navController = rememberNavController()
 
     NavHost(
         navController = navController,
         startDestination = SPLASH_ROUTE,
-        modifier = modifier.fillMaxSize()
+        modifier = modifier.fillMaxSize(),
+        enterTransition = { slideInHorizontally { -1 } },
+        exitTransition = { slideOutHorizontally { 1 } }
     ) {
-        composable(route = SPLASH_ROUTE) {
+
+        composable(
+            route = SPLASH_ROUTE
+        ) {
             SplashScreen()
         }
     }
