@@ -30,7 +30,10 @@ android {
 }
 
 dependencies {
+    // Android Core
     implementation(libs.androidx.core.ktx)
+
+    // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
