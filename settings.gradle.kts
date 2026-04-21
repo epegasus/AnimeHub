@@ -22,5 +22,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Smart Task Manager"
+rootProject.name = "AnimeHub"
 include(":app")
