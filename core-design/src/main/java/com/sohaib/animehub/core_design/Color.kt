@@ -1,4 +1,4 @@
-package com.sohaib.animehub.ui.theme
+package com.sohaib.animehub.core_design
 
 import androidx.compose.ui.graphics.Color
 

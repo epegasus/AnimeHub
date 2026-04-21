@@ -1,4 +1,4 @@
-package com.sohaib.animehub.ui.theme
+package com.sohaib.animehub.core_design
 
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
