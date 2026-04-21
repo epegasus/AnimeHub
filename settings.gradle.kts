@@ -24,3 +24,14 @@ dependencyResolutionManagement {
 
 rootProject.name = "AnimeHub"
 include(":app")
+include(":data")
+include(":domain")
+include(":feature-splash")
+include(":feature-dashboard")
+include(":feature-home")
+include(":feature-favourites")
+include(":feature-settings")
+include(":core-network")
+include(":core-ui")
+include(":core-common")
+include(":core-design")
