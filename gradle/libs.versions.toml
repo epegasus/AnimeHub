@@ -16,9 +16,16 @@ composeBom = "2026.03.01"
 # Compose Navigation
 navigationCompose = "2.9.7"
 
+# Coil - Image loader
+coilCompose = "3.4.0"
+
 # Retrofit
 retrofit = "3.0.0"
 loggingInterceptor = "5.3.2"
+moshi = "1.15.2"
+
+# Koin
+koinBom = "4.2.1"
 
 # Testing
 junit = "4.13.2"
@@ -51,10 +58,20 @@ androidx-compose-material-icons-extended = { module = "androidx.compose.material
 # Compose Navigation
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
 
+# Coil - Image loader
+coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coilCompose" }
+
 # Retrofit
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
 converter-moshi = { module = "com.squareup.retrofit2:converter-moshi", version.ref = "retrofit" }
+moshi-kotlin = { module = "com.squareup.moshi:moshi-kotlin", version.ref = "moshi" }
 logging-interceptor = { module = "com.squareup.okhttp3:logging-interceptor", version.ref = "loggingInterceptor" }
+
+# Koin
+koin-bom = { module = "io.insert-koin:koin-bom", version.ref = "koinBom" }
+koin-core = { module = "io.insert-koin:koin-core-coroutines" }
+koin-android = { module = "io.insert-koin:koin-android" }
+koin-androidx-compose = { module = "io.insert-koin:koin-androidx-compose" }
 
 # Testing
 junit = { group = "junit", name = "junit", version.ref = "junit" }

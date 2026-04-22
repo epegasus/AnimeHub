@@ -30,8 +30,15 @@ android {
 }
 
 dependencies {
+    implementation(project(":core-network"))
+    implementation(project(":domain"))
+
     // Android Core
     implementation(libs.androidx.core.ktx)
+
+    // Koin
+    implementation(platform(libs.koin.bom))
+    implementation(libs.koin.core)
 
     // Testing
     testImplementation(libs.junit)

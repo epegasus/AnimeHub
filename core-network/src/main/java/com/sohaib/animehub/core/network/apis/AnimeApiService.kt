@@ -11,5 +11,4 @@ interface AnimeApiService {
         @Query("page[limit]") limit: Int = 20,
         @Query("page[offset]") offset: Int = 0,
     ): AnimeDTO
-
 }

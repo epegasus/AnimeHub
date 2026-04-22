@@ -1,8 +1,8 @@
 package com.sohaib.animehub.core.network.models.animeChild
 
 data class Titles(
-    val en: String,
-    val en_jp: String,
-    val en_us: String,
-    val ja_jp: String
+    val en: String? = null,
+    val en_jp: String? = null,
+    val en_us: String? = null,
+    val ja_jp: String? = null,
 )

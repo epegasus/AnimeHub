@@ -36,7 +36,12 @@ dependencies {
     // Retrofit
     implementation(libs.retrofit)
     implementation(libs.converter.moshi)
+    implementation(libs.moshi.kotlin)
     implementation(libs.logging.interceptor)
+
+    // Koin
+    implementation(platform(libs.koin.bom))
+    implementation(libs.koin.core)
 
     // Testing
     testImplementation(libs.junit)

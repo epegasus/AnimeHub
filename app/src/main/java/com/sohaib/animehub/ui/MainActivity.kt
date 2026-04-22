@@ -1,4 +1,4 @@
-package com.sohaib.animehub
+package com.sohaib.animehub.ui
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity

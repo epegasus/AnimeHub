@@ -5,7 +5,7 @@ import com.sohaib.animehub.core.network.models.animeChild.LinksXXXXXXXXXXXXXXXXX
 import com.sohaib.animehub.core.network.models.animeChild.MetaXX
 
 data class AnimeDTO(
-    val `data`: List<Data>,
-    val links: LinksXXXXXXXXXXXXXXXXX,
-    val meta: MetaXX
+    val `data`: List<Data> = emptyList(),
+    val links: LinksXXXXXXXXXXXXXXXXX? = null,
+    val meta: MetaXX? = null,
 )

@@ -38,7 +38,12 @@ android {
 
 dependencies {
     implementation(project(":core-common"))
+    implementation(project(":core-database"))
     implementation(project(":core-design"))
+    implementation(project(":core-network"))
+
+    implementation(project(":data"))
+    implementation(project(":domain"))
 
     implementation(project(":feature-splash"))
     implementation(project(":feature-dashboard"))
@@ -62,6 +67,11 @@ dependencies {
 
     // Navigation Compose
     implementation(libs.androidx.navigation.compose)
+
+    // Koin
+    implementation(platform(libs.koin.bom))
+    implementation(libs.koin.core)
+    implementation(libs.koin.android)
 
     // Testing
     testImplementation(libs.junit)
