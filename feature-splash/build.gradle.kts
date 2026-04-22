@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "com.sohaib.animehub.feature_splash"
+    namespace = "com.sohaib.animehub.feature.splash"
     compileSdk {
         version = release(36) {
             minorApiLevel = 1

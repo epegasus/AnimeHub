@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "com.sohaib.animehub.feature_dashboard"
+    namespace = "com.sohaib.animehub.feature.dashboard"
     compileSdk {
         version = release(36) {
             minorApiLevel = 1

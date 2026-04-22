@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "com.sohaib.animehub.core_design"
+    namespace = "com.sohaib.animehub.core.design"
     compileSdk {
         version = release(36) {
             minorApiLevel = 1

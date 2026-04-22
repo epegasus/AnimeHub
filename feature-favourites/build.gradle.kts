@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "com.sohaib.feature_favourites"
+    namespace = "com.sohaib.animehub.feature.favourites"
     compileSdk {
         version = release(36) {
             minorApiLevel = 1
