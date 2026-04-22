@@ -1,26 +1,52 @@
 package com.sohaib.animehub.feature_splash
 
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.sohaib.animehub.core_common.R
+import com.sohaib.animehub.feature_splash.effect.SplashEffect
+import com.sohaib.animehub.feature_splash.viewModel.SplashViewModel
 
 const val SPLASH_ROUTE = "splash"
 
 @Composable
-fun SplashScreen(modifier: Modifier = Modifier) {
-    Box(
+fun SplashScreen(
+    modifier: Modifier = Modifier,
+    navigateToDashboard: () -> Unit,
+    viewModel: SplashViewModel = viewModel(),
+) {
+
+    val state = viewModel.state.collectAsStateWithLifecycle()
+
+    LaunchedEffect(viewModel.effect) {
+        viewModel.effect.collect { splashEffect ->
+            when (splashEffect) {
+                SplashEffect.NavigateToDashboard -> navigateToDashboard()
+            }
+        }
+    }
+
+    Column(
         modifier = modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.SpaceEvenly
     ) {
         Text(
             text = stringResource(R.string.app_name),
             style = MaterialTheme.typography.headlineLarge
         )
+        if (state.value.isLoading) {
+            CircularProgressIndicator()
+        }
     }
 }

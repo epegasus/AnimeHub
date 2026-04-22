@@ -8,6 +8,8 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.sohaib.animehub.feature_dashboard.DASHBOARD_ROUTE
+import com.sohaib.animehub.feature_dashboard.DashboardScreen
 import com.sohaib.animehub.feature_splash.SPLASH_ROUTE
 import com.sohaib.animehub.feature_splash.SplashScreen
 
@@ -27,7 +29,15 @@ fun NavGraph(modifier: Modifier = Modifier) {
         composable(
             route = SPLASH_ROUTE
         ) {
-            SplashScreen()
+            SplashScreen(
+                navigateToDashboard = { navController.navigate(DASHBOARD_ROUTE) }
+            )
+        }
+
+        composable(
+            route = DASHBOARD_ROUTE
+        ) {
+            DashboardScreen()
         }
     }
 }
