@@ -33,6 +33,11 @@ dependencies {
     // Android Core
     implementation(libs.androidx.core.ktx)
 
+    // Retrofit
+    implementation(libs.retrofit)
+    implementation(libs.converter.moshi)
+    implementation(libs.logging.interceptor)
+
     // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
