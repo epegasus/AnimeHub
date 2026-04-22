@@ -10,8 +10,11 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.sohaib.animehub.feature_dashboard.DASHBOARD_ROUTE
 import com.sohaib.animehub.feature_dashboard.DashboardScreen
+import com.sohaib.animehub.feature_home.HomeScreen
+import com.sohaib.animehub.feature_settings.SettingScreen
 import com.sohaib.animehub.feature_splash.SPLASH_ROUTE
 import com.sohaib.animehub.feature_splash.SplashScreen
+import com.sohaib.feature_favourites.FavouriteScreen
 
 @Composable
 fun NavGraph(modifier: Modifier = Modifier) {
@@ -22,22 +25,30 @@ fun NavGraph(modifier: Modifier = Modifier) {
         navController = navController,
         startDestination = SPLASH_ROUTE,
         modifier = modifier.fillMaxSize(),
-        enterTransition = { slideInHorizontally { -1 } },
-        exitTransition = { slideOutHorizontally { 1 } }
+        enterTransition = { slideInHorizontally { -it } },
+        exitTransition = { slideOutHorizontally { it } }
     ) {
 
         composable(
             route = SPLASH_ROUTE
         ) {
             SplashScreen(
-                navigateToDashboard = { navController.navigate(DASHBOARD_ROUTE) }
+                navigateToDashboard = {
+                    navController.navigate(DASHBOARD_ROUTE) {
+                        popUpTo(SPLASH_ROUTE) { inclusive = true }
+                    }
+                }
             )
         }
 
         composable(
             route = DASHBOARD_ROUTE
         ) {
-            DashboardScreen()
+            DashboardScreen(
+                homeContent = { HomeScreen() },
+                favouriteContent = { FavouriteScreen() },
+                settingContent = { SettingScreen() }
+            )
         }
     }
 }
