@@ -49,6 +49,7 @@ class HomeViewModel(private val useCase: GetAnimeListUseCase) : ViewModel() {
                 _state.update { it.copy(isLoading = false, isEmpty = true) }
                 return
             }
+            Log.d(TAG, "HomeViewModel: fetchData: Total Size = ${list.size}")
             _state.update { it.copy(isLoading = false, isEmpty = false, animeList = list) }
         } catch (ex: Exception) {
             handleError(ex)

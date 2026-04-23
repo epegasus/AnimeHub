@@ -15,7 +15,10 @@ fun AnimeDTO.toDomain(): List<Anime> {
                 ?: titles?.ja_jp
                 ?: attributes?.canonicalTitle
                 ?: "",
-            smallImageUrl = attributes?.posterImage?.small.orEmpty(),
+            // Some responses return http image URLs; normalize to https for Android network security.
+            smallImageUrl = attributes?.posterImage?.small
+                ?.replaceFirst("http://", "https://")
+                .orEmpty(),
         )
     }
 }

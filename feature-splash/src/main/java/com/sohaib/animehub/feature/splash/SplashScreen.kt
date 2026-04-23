@@ -28,7 +28,7 @@ fun SplashScreen(
 
     val state = viewModel.state.collectAsStateWithLifecycle()
 
-    LaunchedEffect(viewModel.effect) {
+    LaunchedEffect(viewModel) {
         viewModel.effect.collect { splashEffect ->
             when (splashEffect) {
                 SplashEffect.NavigateToDashboard -> navigateToDashboard()

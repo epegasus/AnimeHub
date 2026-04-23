@@ -53,6 +53,7 @@ dependencies {
 
     // Coil - Image loader
     implementation(libs.coil.compose)
+    implementation(libs.coil.network.okhttp)
 
     // Koin
     implementation(platform(libs.koin.bom))
