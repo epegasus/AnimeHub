@@ -3,6 +3,7 @@ package com.sohaib.animehub.data.repositories
 import com.sohaib.animehub.data.dataSources.remote.AnimeRemoteDataSource
 import com.sohaib.animehub.data.mapper.toDomain
 import com.sohaib.animehub.domain.models.Anime
+import com.sohaib.animehub.domain.models.AnimeDetail
 import com.sohaib.animehub.domain.repositories.AnimeRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
@@ -14,5 +15,9 @@ class AnimeRepositoryImpl(
 
     override suspend fun getAnimeList(): List<Anime> = withContext(ioDispatchers) {
         remoteDataSource.getAnimeList().toDomain()
+    }
+
+    override suspend fun getAnimeDetails(animeId: String): AnimeDetail = withContext(ioDispatchers) {
+        remoteDataSource.getAnimeDetails(animeId = animeId).toDomain()
     }
 }

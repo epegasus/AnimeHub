@@ -1,16 +1,19 @@
 package com.sohaib.animehub.feature.dashboard
 
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.Home
 import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -18,8 +21,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.sohaib.animehub.core.common.R as commonR
 import com.sohaib.animehub.feature.dashboard.model.BottomNavItem
+import com.sohaib.animehub.core.common.R as commonR
 
 const val DASHBOARD_ROUTE = "dashboard"
 const val DASHBOARD_HOME_ROUTE = "dashboard/home"
@@ -32,6 +35,7 @@ private val bottomNavItems = listOf(
     BottomNavItem(DASHBOARD_SETTING_ROUTE, Icons.Rounded.Settings, commonR.string.settings),
 )
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(
     modifier: Modifier = Modifier,
@@ -43,6 +47,16 @@ fun DashboardScreen(
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = stringResource(commonR.string.app_name),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            )
+        },
         bottomBar = {
             BottomAppBar(
                 currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route.orEmpty()

@@ -5,6 +5,7 @@ import com.sohaib.animehub.core.network.di.coreNetworkModule
 import com.sohaib.animehub.data.di.dataSourceModule
 import com.sohaib.animehub.data.di.repositoriesModule
 import com.sohaib.animehub.domain.di.domainModule
+import com.sohaib.animehub.feature.anime.details.di.animeDetailsFeatureModule
 import com.sohaib.animehub.feature.home.di.homeFeatureModule
 
 class KoinModules {
@@ -21,7 +22,8 @@ class KoinModules {
         domainModule,
     )
     private val featureList = listOf(
-        homeFeatureModule
+        homeFeatureModule,
+        animeDetailsFeatureModule,
     )
 
     val list = coreList + dataList + domainList + featureList
