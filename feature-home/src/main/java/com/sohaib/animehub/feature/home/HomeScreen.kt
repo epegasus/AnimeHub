@@ -73,14 +73,11 @@ private fun HomeScreenContent(
     Box(
         modifier = modifier.fillMaxSize()
     ) {
-        if (state.isLoading) {
-            HomeScreenLoadingState()
-        } else if (state.isError) {
-            HomeScreenErrorState(onRetryClicked)
-        } else if (state.isEmpty) {
-            HomeScreenEmptyState()
-        } else {
-            HomeScreenSuccessState(list = state.animeList, onCardClick = onCardClick)
+        when {
+            state.isLoading -> HomeScreenLoadingState()
+            state.isError -> HomeScreenErrorState(onRetryClicked)
+            state.isEmpty -> HomeScreenEmptyState()
+            else -> HomeScreenSuccessState(list = state.animeList, onCardClick = onCardClick)
         }
     }
 }
