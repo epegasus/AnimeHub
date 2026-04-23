@@ -5,9 +5,14 @@ import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import com.sohaib.animehub.feature.anime.details.ANIME_DETAILS_ROUTE
+import com.sohaib.animehub.feature.anime.details.AnimeDetailsScreen
+import com.sohaib.animehub.feature.anime.details.createRouteAnimeDetails
 import com.sohaib.animehub.feature.dashboard.DASHBOARD_ROUTE
 import com.sohaib.animehub.feature.dashboard.DashboardScreen
 import com.sohaib.animehub.feature.favourites.FavouriteScreen
@@ -45,9 +50,25 @@ fun NavGraph(modifier: Modifier = Modifier) {
             route = DASHBOARD_ROUTE
         ) {
             DashboardScreen(
-                homeContent = { HomeScreen() },
+                homeContent = {
+                    HomeScreen(
+                        onNavigateToDetailPage = {
+                            navController.navigate(createRouteAnimeDetails(it))
+                        }
+                    )
+                },
                 favouriteContent = { FavouriteScreen() },
                 settingContent = { SettingScreen() }
+            )
+        }
+
+        composable(
+            route = ANIME_DETAILS_ROUTE,
+            arguments = listOf(navArgument("animeId") { type = NavType.StringType })
+        ) {
+            val animeId = it.arguments?.getString("animeId")
+            AnimeDetailsScreen(
+                animeId = animeId
             )
         }
     }

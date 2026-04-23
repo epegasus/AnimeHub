@@ -28,6 +28,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.sohaib.animehub.domain.models.Anime
+import com.sohaib.animehub.feature.home.effect.HomeEffect
+import com.sohaib.animehub.feature.home.intent.HomeIntent
 import com.sohaib.animehub.feature.home.state.HomeState
 import com.sohaib.animehub.feature.home.viewModel.HomeViewModel
 import org.koin.androidx.compose.koinViewModel
@@ -37,18 +39,22 @@ import com.sohaib.animehub.core.common.R as commonR
 fun HomeScreen(
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = koinViewModel(),
+    onNavigateToDetailPage: (String) -> Unit,
 ) {
     val state = viewModel.state.collectAsStateWithLifecycle()
 
-    LaunchedEffect(Unit) {
-        viewModel.effect.collect {
-
+    LaunchedEffect(viewModel) {
+        viewModel.effect.collect { effect ->
+            when (effect) {
+                is HomeEffect.NavigateToDetailPage -> onNavigateToDetailPage(effect.animeId)
+            }
         }
     }
 
     HomeScreenContent(
         modifier = modifier,
-        state = state.value
+        state = state.value,
+        onCardClick = { viewModel.handleIntent(HomeIntent.OnItemClick(it)) }
     )
 }
 
@@ -56,40 +62,25 @@ fun HomeScreen(
 private fun HomeScreenContent(
     modifier: Modifier = Modifier,
     state: HomeState,
+    onCardClick: (String) -> Unit,
 ) {
     Box(
         modifier = modifier.fillMaxSize()
     ) {
-        if (state.isError) {
-            HomeScreen_ErrorState()
+        if (state.isLoading) {
+            HomeScreenLoadingState()
+        } else if (state.isError) {
+            HomeScreenErrorState()
         } else if (state.isEmpty) {
-            HomeScreen_EmptyState()
-        } else if (state.isLoading) {
-            HomeScreen_LoadingState()
+            HomeScreenEmptyState()
         } else {
-            HomeScreen_SuccessState(state.animeList)
+            HomeScreenSuccessState(list = state.animeList, onCardClick = onCardClick)
         }
     }
 }
 
 @Composable
-private fun HomeScreen_SuccessState(list: List<Anime>) {
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(2),
-        contentPadding = PaddingValues(8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        items(list, key = { it.id }) { anime ->
-            AnimeItem(
-                anime = anime
-            )
-        }
-    }
-}
-
-@Composable
-private fun HomeScreen_LoadingState() {
+private fun HomeScreenLoadingState() {
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
@@ -99,17 +90,7 @@ private fun HomeScreen_LoadingState() {
 }
 
 @Composable
-private fun HomeScreen_EmptyState() {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(text = stringResource(commonR.string.no_data_found))
-    }
-}
-
-@Composable
-private fun HomeScreen_ErrorState() {
+private fun HomeScreenErrorState() {
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
@@ -119,14 +100,46 @@ private fun HomeScreen_ErrorState() {
 }
 
 @Composable
+private fun HomeScreenEmptyState() {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(text = stringResource(commonR.string.no_data_found))
+    }
+}
+
+@Composable
+private fun HomeScreenSuccessState(
+    list: List<Anime>,
+    onCardClick: (String) -> Unit,
+) {
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(2),
+        contentPadding = PaddingValues(8.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        items(list, key = { it.id }) { anime ->
+            AnimeItem(
+                anime = anime,
+                onCardClick = onCardClick
+            )
+        }
+    }
+}
+
+@Composable
 fun AnimeItem(
     modifier: Modifier = Modifier,
     anime: Anime,
+    onCardClick: (String) -> Unit,
 ) {
     OutlinedCard(
         modifier = modifier
             .fillMaxWidth()
-            .aspectRatio(1f)
+            .aspectRatio(1f),
+        onClick = { onCardClick(anime.id) }
     ) {
         Box {
             AsyncImage(
@@ -157,7 +170,7 @@ private fun HomeScreenPrev() {
         state = HomeState(
             animeList = listOf(
                 Anime(
-                    id = "1",
+                    id = "0",
                     title = "Naruto",
                     smallImageUrl = "",
                 ),
@@ -177,6 +190,7 @@ private fun HomeScreenPrev() {
                     smallImageUrl = "",
                 ),
             )
-        )
+        ),
+        onCardClick = {}
     )
 }

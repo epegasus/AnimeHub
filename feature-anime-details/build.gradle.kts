@@ -1,10 +1,9 @@
 plugins {
-    alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.android.library)
 }
 
 android {
-    namespace = "com.sohaib.animehub"
+    namespace = "com.sohaib.animehub.feature.anime.details"
     compileSdk {
         version = release(36) {
             minorApiLevel = 1
@@ -12,13 +11,10 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.sohaib.animehub"
         minSdk = 24
-        targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles("consumer-rules.pro")
     }
 
     buildTypes {
@@ -31,49 +27,34 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
-    buildFeatures {
-        compose = true
-    }
 }
 
 dependencies {
     implementation(project(":core-common"))
-    implementation(project(":core-database"))
-    implementation(project(":core-design"))
-    implementation(project(":core-network"))
-
-    implementation(project(":data"))
     implementation(project(":domain"))
-
-    implementation(project(":feature-splash"))
-    implementation(project(":feature-dashboard"))
-    implementation(project(":feature-home"))
-    implementation(project(":feature-favourites"))
-    implementation(project(":feature-settings"))
-
-    implementation(project(":feature-anime-details"))
 
     // Android Core
     implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.activity.compose)
 
     // Lifecycle
     implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
 
     // Compose
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.ui)
-    implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
 
-    // Navigation Compose
-    implementation(libs.androidx.navigation.compose)
+    // Coil - Image loader
+    implementation(libs.coil.compose)
+    implementation(libs.coil.network.okhttp)
 
     // Koin
     implementation(platform(libs.koin.bom))
     implementation(libs.koin.core)
-    implementation(libs.koin.android)
+    implementation(libs.koin.androidx.compose)
 
     // Testing
     testImplementation(libs.junit)

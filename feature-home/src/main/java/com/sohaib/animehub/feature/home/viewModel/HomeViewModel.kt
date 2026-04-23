@@ -34,9 +34,10 @@ class HomeViewModel(private val useCase: GetAnimeListUseCase) : ViewModel() {
         handleIntent(HomeIntent.FetchData)
     }
 
-    private fun handleIntent(intent: HomeIntent) = viewModelScope.launch(coroutineExceptionHandler) {
+    fun handleIntent(intent: HomeIntent) = viewModelScope.launch(coroutineExceptionHandler) {
         when (intent) {
             HomeIntent.FetchData -> fetchData()
+            is HomeIntent.OnItemClick -> _effect.emit(HomeEffect.NavigateToDetailPage(intent.animeId))
         }
     }
 
