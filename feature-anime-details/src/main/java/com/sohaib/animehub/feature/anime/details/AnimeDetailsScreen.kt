@@ -81,7 +81,10 @@ private fun AnimeDetailsContent(
                 title = { Text(text = state.animeDetail?.title ?: stringResource(R.string.anime_details)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(imageVector = Icons.Rounded.ArrowBackIosNew, contentDescription = "Navigate Back")
+                        Icon(
+                            imageVector = Icons.Rounded.ArrowBackIosNew,
+                            contentDescription = stringResource(commonR.string.navigate_back),
+                        )
                     }
                 },
             )
@@ -123,8 +126,12 @@ private fun AnimeDetailsSuccessState(
         )
         Text(text = animeDetail.title, style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(horizontal = 16.dp))
         Text(text = animeDetail.description, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(horizontal = 16.dp))
-        Text(text = "Episodes: ${animeDetail.episodeCount}", style = MaterialTheme.typography.bodyMedium, modifier = Modifier
-            .padding(horizontal = 16.dp)
-            .padding(bottom = 40.dp))
+        Text(
+            text = stringResource(commonR.string.episodes_count, animeDetail.episodeCount),
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier
+                .padding(horizontal = 16.dp)
+                .padding(bottom = 40.dp)
+        )
     }
 }

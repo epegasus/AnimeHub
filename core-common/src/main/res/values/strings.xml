@@ -8,5 +8,9 @@
     <string name="error_found">Error Found</string>
     <string name="no_data_found">No Data Found</string>
     <string name="retry">Retry</string>
+    <string name="navigate_back">Navigate Back</string>
+    <string name="episodes_count">Episodes: %1$d</string>
+    <string name="setting_screen_title">Setting Screen</string>
+    <string name="favourites_screen_title">Favourites Screen</string>
 
 </resources>
