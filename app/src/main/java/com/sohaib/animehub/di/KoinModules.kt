@@ -7,6 +7,7 @@ import com.sohaib.animehub.data.di.repositoriesModule
 import com.sohaib.animehub.domain.di.domainModule
 import com.sohaib.animehub.feature.anime.details.di.animeDetailsFeatureModule
 import com.sohaib.animehub.feature.home.di.homeFeatureModule
+import com.sohaib.animehub.feature.splash.di.splashFeatureModule
 
 class KoinModules {
 
@@ -22,6 +23,7 @@ class KoinModules {
         domainModule,
     )
     private val featureList = listOf(
+        splashFeatureModule,
         homeFeatureModule,
         animeDetailsFeatureModule,
     )

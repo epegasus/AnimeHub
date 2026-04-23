@@ -14,11 +14,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.sohaib.animehub.core.common.R
 import com.sohaib.animehub.feature.splash.effect.SplashEffect
 import com.sohaib.animehub.feature.splash.state.SplashState
 import com.sohaib.animehub.feature.splash.viewModel.SplashViewModel
+import org.koin.androidx.compose.koinViewModel
 
 const val SPLASH_ROUTE = "splash"
 
@@ -26,7 +26,7 @@ const val SPLASH_ROUTE = "splash"
 fun SplashScreen(
     modifier: Modifier = Modifier,
     navigateToDashboard: () -> Unit,
-    viewModel: SplashViewModel = viewModel(),
+    viewModel: SplashViewModel = koinViewModel(),
 ) {
 
     val state = viewModel.state.collectAsStateWithLifecycle()
