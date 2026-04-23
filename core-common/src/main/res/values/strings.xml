@@ -7,5 +7,6 @@
 
     <string name="error_found">Error Found</string>
     <string name="no_data_found">No Data Found</string>
+    <string name="retry">Retry</string>
 
 </resources>

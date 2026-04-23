@@ -68,7 +68,8 @@ fun NavGraph(modifier: Modifier = Modifier) {
         ) {
             val animeId = it.arguments?.getString("animeId")
             AnimeDetailsScreen(
-                animeId = animeId
+                animeId = animeId,
+                onNavigateBack = { navController.navigateUp() },
             )
         }
     }

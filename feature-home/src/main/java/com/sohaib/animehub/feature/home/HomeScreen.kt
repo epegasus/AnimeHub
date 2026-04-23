@@ -3,14 +3,18 @@ package com.sohaib.animehub.feature.home
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
@@ -54,7 +58,8 @@ fun HomeScreen(
     HomeScreenContent(
         modifier = modifier,
         state = state.value,
-        onCardClick = { viewModel.handleIntent(HomeIntent.OnItemClick(it)) }
+        onCardClick = { viewModel.handleIntent(HomeIntent.OnItemClick(it)) },
+        onRetryClicked = { viewModel.handleIntent(HomeIntent.RefreshData) }
     )
 }
 
@@ -63,6 +68,7 @@ private fun HomeScreenContent(
     modifier: Modifier = Modifier,
     state: HomeState,
     onCardClick: (String) -> Unit,
+    onRetryClicked: () -> Unit,
 ) {
     Box(
         modifier = modifier.fillMaxSize()
@@ -70,7 +76,7 @@ private fun HomeScreenContent(
         if (state.isLoading) {
             HomeScreenLoadingState()
         } else if (state.isError) {
-            HomeScreenErrorState()
+            HomeScreenErrorState(onRetryClicked)
         } else if (state.isEmpty) {
             HomeScreenEmptyState()
         } else {
@@ -90,12 +96,21 @@ private fun HomeScreenLoadingState() {
 }
 
 @Composable
-private fun HomeScreenErrorState() {
-    Box(
+private fun HomeScreenErrorState(
+    onRetryClicked: () -> Unit,
+) {
+    Column(
         modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
         Text(text = stringResource(commonR.string.error_found))
+        Spacer(modifier = Modifier.height(8.dp))
+        Button(
+            onClick = onRetryClicked
+        ) {
+            Text(text = stringResource(commonR.string.retry))
+        }
     }
 }
 
@@ -163,7 +178,7 @@ fun AnimeItem(
     }
 }
 
-@Preview
+@Preview(showBackground = true)
 @Composable
 private fun HomeScreenPrev() {
     HomeScreenContent(
@@ -191,6 +206,7 @@ private fun HomeScreenPrev() {
                 ),
             )
         ),
-        onCardClick = {}
+        onCardClick = {},
+        onRetryClicked = {}
     )
 }
