@@ -15,6 +15,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -32,6 +33,7 @@ import com.sohaib.animehub.domain.models.AnimeDetail
 import com.sohaib.animehub.feature.anime.details.effect.AnimeDetailsEffect
 import com.sohaib.animehub.feature.anime.details.intent.AnimeDetailsIntent
 import com.sohaib.animehub.feature.anime.details.state.AnimeDetailsState
+import com.sohaib.animehub.feature.anime.details.state.AnimeDetailsUiState
 import com.sohaib.animehub.feature.anime.details.viewModel.AnimeDetailsViewModel
 import org.koin.androidx.compose.koinViewModel
 import com.sohaib.animehub.core.common.R as commonR
@@ -78,7 +80,13 @@ private fun AnimeDetailsContent(
         modifier = modifier.fillMaxSize(),
         topBar = {
             TopAppBar(
-                title = { Text(text = state.animeDetail?.title ?: stringResource(R.string.anime_details)) },
+                title = {
+                    val title = when (val uiState = state.uiState) {
+                        is AnimeDetailsUiState.Success -> uiState.animeDetail.title
+                        else -> stringResource(R.string.anime_details)
+                    }
+                    Text(text = title)
+                },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
@@ -96,11 +104,19 @@ private fun AnimeDetailsContent(
                 .padding(innerPadding),
             contentAlignment = Alignment.Center
         ) {
-            when {
-                state.isLoading -> CircularProgressIndicator()
-                state.isError -> Text(text = stringResource(commonR.string.error_found))
-                state.isEmpty -> Text(text = stringResource(commonR.string.no_data_found))
-                state.animeDetail != null -> AnimeDetailsSuccessState(animeDetail = state.animeDetail)
+            when (val uiState = state.uiState) {
+                AnimeDetailsUiState.Loading -> CircularProgressIndicator()
+                is AnimeDetailsUiState.Error -> Text(text = stringResource(uiState.messageResId))
+                AnimeDetailsUiState.Empty -> Text(text = stringResource(commonR.string.no_data_found))
+                is AnimeDetailsUiState.Success -> AnimeDetailsSuccessState(animeDetail = uiState.animeDetail)
+            }
+
+            if (state.isRefreshing) {
+                LinearProgressIndicator(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .align(Alignment.TopCenter)
+                )
             }
         }
     }

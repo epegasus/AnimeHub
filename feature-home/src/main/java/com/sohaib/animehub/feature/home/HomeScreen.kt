@@ -16,6 +16,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
@@ -26,8 +27,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
@@ -35,6 +36,7 @@ import com.sohaib.animehub.domain.models.Anime
 import com.sohaib.animehub.feature.home.effect.HomeEffect
 import com.sohaib.animehub.feature.home.intent.HomeIntent
 import com.sohaib.animehub.feature.home.state.HomeState
+import com.sohaib.animehub.feature.home.state.HomeUiState
 import com.sohaib.animehub.feature.home.viewModel.HomeViewModel
 import org.koin.androidx.compose.koinViewModel
 import com.sohaib.animehub.core.common.R as commonR
@@ -73,11 +75,19 @@ private fun HomeScreenContent(
     Box(
         modifier = modifier.fillMaxSize()
     ) {
-        when {
-            state.isLoading -> HomeScreenLoadingState()
-            state.isError -> HomeScreenErrorState(onRetryClicked)
-            state.isEmpty -> HomeScreenEmptyState()
-            else -> HomeScreenSuccessState(list = state.animeList, onCardClick = onCardClick)
+        when (val uiState = state.uiState) {
+            HomeUiState.Loading -> HomeScreenLoadingState()
+            HomeUiState.Empty -> HomeScreenEmptyState()
+            is HomeUiState.Error -> HomeScreenErrorState(uiState.messageResId, onRetryClicked)
+            is HomeUiState.Success -> HomeScreenSuccessState(list = uiState.animeList, onCardClick = onCardClick)
+        }
+
+        if (state.isRefreshing) {
+            LinearProgressIndicator(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.TopCenter)
+            )
         }
     }
 }
@@ -85,7 +95,9 @@ private fun HomeScreenContent(
 @Composable
 private fun HomeScreenLoadingState() {
     Box(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
         contentAlignment = Alignment.Center
     ) {
         CircularProgressIndicator()
@@ -94,14 +106,17 @@ private fun HomeScreenLoadingState() {
 
 @Composable
 private fun HomeScreenErrorState(
+    messageResId: Int,
     onRetryClicked: () -> Unit,
 ) {
     Column(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text(text = stringResource(commonR.string.error_found))
+        Text(text = stringResource(messageResId), textAlign = TextAlign.Center)
         Spacer(modifier = Modifier.height(8.dp))
         Button(
             onClick = onRetryClicked
@@ -114,10 +129,12 @@ private fun HomeScreenErrorState(
 @Composable
 private fun HomeScreenEmptyState() {
     Box(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
         contentAlignment = Alignment.Center
     ) {
-        Text(text = stringResource(commonR.string.no_data_found))
+        Text(text = stringResource(commonR.string.no_data_found), textAlign = TextAlign.Center)
     }
 }
 
@@ -182,27 +199,29 @@ fun AnimeItem(
 private fun HomeScreenPrev() {
     HomeScreenContent(
         state = HomeState(
-            animeList = listOf(
-                Anime(
-                    id = "0",
-                    title = "Naruto",
-                    imageUrl = "",
-                ),
-                Anime(
-                    id = "1",
-                    title = "Naruto",
-                    imageUrl = "",
-                ),
-                Anime(
-                    id = "2",
-                    title = "Naruto",
-                    imageUrl = "",
-                ),
-                Anime(
-                    id = "3",
-                    title = "Naruto",
-                    imageUrl = "",
-                ),
+            uiState = HomeUiState.Success(
+                animeList = listOf(
+                    Anime(
+                        id = "0",
+                        title = "Naruto",
+                        imageUrl = "",
+                    ),
+                    Anime(
+                        id = "1",
+                        title = "Naruto",
+                        imageUrl = "",
+                    ),
+                    Anime(
+                        id = "2",
+                        title = "Naruto",
+                        imageUrl = "",
+                    ),
+                    Anime(
+                        id = "3",
+                        title = "Naruto",
+                        imageUrl = "",
+                    ),
+                )
             )
         ),
         onCardClick = {},

@@ -6,6 +6,6 @@ import kotlinx.coroutines.flow.Flow
 
 class GetAnimeListUseCase(private val repository: AnimeRepository) {
 
-    suspend operator fun invoke(): Flow<List<Anime>> = repository.getAnimeList()
+    operator fun invoke(): Flow<List<Anime>> = repository.getAnimeList()
 
 }

@@ -6,6 +6,6 @@ import kotlinx.coroutines.flow.Flow
 
 class GetAnimeDetailsByIdUseCase(private val repository: AnimeRepository) {
 
-    suspend operator fun invoke(animeId: String): Flow<AnimeDetail?> = repository.getAnimeDetails(animeId = animeId)
+    operator fun invoke(animeId: String): Flow<AnimeDetail?> = repository.getAnimeDetails(animeId = animeId)
 
 }

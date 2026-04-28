@@ -10,8 +10,24 @@ class AnimeLocalDataSource(private val dao: AnimeDao) {
 
     fun getAnimeDetails(animeId: String): Flow<AnimeEntity?> = dao.getAnimeById(animeId = animeId)
 
-    suspend fun insertAll(list: List<AnimeEntity>): List<Long> = dao.insertAll(animeList = list)
+    suspend fun syncList(list: List<AnimeEntity>) {
+        if (list.isEmpty()) return
 
-    suspend fun updateItem(animeEntity: AnimeEntity): Int = dao.updateItem(animeEntity = animeEntity)
+        // 1️⃣ insert new items
+        dao.insertIgnore(list)
 
+        // 2️⃣ update only list fields (safe)
+        list.forEach {
+            dao.updateListFields(
+                id = it.id,
+                title = it.title,
+                posterImageLargeUrl = it.posterImageLargeUrl
+            )
+        }
+
+        // 3️⃣ optional cleanup
+        dao.deleteNotIn(list.map { it.id })
+    }
+
+    suspend fun upsertDetail(anime: AnimeEntity) = dao.upsertAnime(anime)
 }

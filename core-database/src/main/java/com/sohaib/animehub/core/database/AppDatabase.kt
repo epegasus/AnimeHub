@@ -8,7 +8,7 @@ import com.sohaib.animehub.core.database.entities.AnimeEntity
 @Database(
     entities = [AnimeEntity::class],
     version = 1,
-    exportSchema = true
+    exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
 
