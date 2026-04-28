@@ -15,6 +15,8 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -32,31 +34,32 @@ class AnimeDetailsViewModel(private val useCase: GetAnimeDetailsByIdUseCase) : V
 
     fun handleIntent(intent: AnimeDetailsIntent) = viewModelScope.launch(coroutineExceptionHandler) {
         when (intent) {
-            is AnimeDetailsIntent.FetchData -> fetchData(intent.animeId)
+            is AnimeDetailsIntent.GetData -> getData(intent.animeId)
             AnimeDetailsIntent.OnNavigateBackClick -> _effect.emit(AnimeDetailsEffect.NavigateBack)
         }
     }
 
-    private suspend fun fetchData(animeId: String) {
+    private suspend fun getData(animeId: String) {
         if (animeId.isBlank()) {
             _state.update { it.copy(isLoading = false, isEmpty = true) }
             return
         }
 
         _state.update { it.copy(isLoading = true, isError = false, isEmpty = false) }
-        try {
-            val details = useCase(animeId)
-            _state.update {
-                it.copy(
-                    isLoading = false,
-                    isError = false,
-                    isEmpty = false,
-                    animeDetail = details,
-                )
+
+        useCase(animeId)
+            .filter { it != null }
+            .catch { handleError(it) }
+            .collect { animeDetail ->
+                _state.update {
+                    it.copy(
+                        isLoading = false,
+                        isError = false,
+                        isEmpty = false,
+                        animeDetail = animeDetail,
+                    )
+                }
             }
-        } catch (ex: Exception) {
-            handleError(ex)
-        }
     }
 
     private fun handleError(throwable: Throwable) = viewModelScope.launch {

@@ -1,15 +1,46 @@
 package com.sohaib.animehub.data.mapper
 
+import com.sohaib.animehub.core.database.entities.AnimeEntity
 import com.sohaib.animehub.core.network.models.AnimeDTO
 import com.sohaib.animehub.core.network.models.AnimeDetailDTO
 import com.sohaib.animehub.domain.models.Anime
 import com.sohaib.animehub.domain.models.AnimeDetail
 
-fun AnimeDTO.toDomain(): List<Anime> {
+/* --------------------------------------------- Room Entities --------------------------------------------- */
+
+fun List<AnimeEntity>.toDomain(): List<Anime> = map {
+    Anime(
+        id = it.id,
+        title = it.title,
+        imageUrl = it.posterImageLargeUrl
+    )
+}
+
+
+fun AnimeEntity?.toDomain(): AnimeDetail? {
+    this ?: return null
+    return AnimeDetail(
+        id = this.id,
+        title = this.title,
+        posterImageLargeUrl = this.posterImageLargeUrl,
+
+        coverImageLargeUrl = this.coverImageLargeUrl.orEmpty(),
+        description = this.description.orEmpty(),
+        slug = this.slug.orEmpty(),
+        episodeCount = this.episodeCount ?: 0,
+        youtubeVideoId = this.youtubeVideoId.orEmpty(),
+        createdAt = this.createdAt.orEmpty(),
+        updatedAt = this.updatedAt.orEmpty()
+    )
+}
+
+/* --------------------------------------------- DTO's (if needed) --------------------------------------------- */
+
+fun AnimeDTO.toEntity(): List<AnimeEntity> {
     return data.map { item ->
         val attributes = item.attributes
         val titles = attributes?.titles
-        Anime(
+        AnimeEntity(
             id = item.id.orEmpty(),
             title = titles?.en
                 ?: titles?.en_us
@@ -18,15 +49,15 @@ fun AnimeDTO.toDomain(): List<Anime> {
                 ?: attributes?.canonicalTitle
                     .orEmpty(),
             // Some responses return http image URLs; normalize to https for Android network security.
-            smallImageUrl = attributes?.posterImage?.small.orEmpty(),
+            posterImageLargeUrl = attributes?.posterImage?.small.orEmpty(),
         )
     }
 }
 
-fun AnimeDetailDTO.toDomain(): AnimeDetail {
+fun AnimeDetailDTO.toEntity(): AnimeEntity {
     val attributes = data.attributes
     val titles = attributes?.titles
-    return AnimeDetail(
+    return AnimeEntity(
         id = data.id.orEmpty(),
         title = titles?.en
             ?: titles?.en_us
@@ -34,13 +65,14 @@ fun AnimeDetailDTO.toDomain(): AnimeDetail {
             ?: titles?.ja_jp
             ?: attributes?.canonicalTitle
                 .orEmpty(),
-        slug = attributes?.slug.orEmpty(),
-        coverImageLargeUrl = attributes?.coverImage?.large.orEmpty(),
         posterImageLargeUrl = attributes?.posterImage?.large.orEmpty(),
-        description = attributes?.description.orEmpty(),
-        episodeCount = attributes?.episodeCount ?: 0,
-        youtubeVideoId = attributes?.youtubeVideoId.orEmpty(),
-        createdAt = attributes?.createdAt.orEmpty(),
-        updatedAt = attributes?.updatedAt.orEmpty()
+
+        coverImageLargeUrl = attributes?.coverImage?.large,
+        description = attributes?.description,
+        slug = attributes?.slug,
+        episodeCount = attributes?.episodeCount,
+        youtubeVideoId = attributes?.youtubeVideoId,
+        createdAt = attributes?.createdAt,
+        updatedAt = attributes?.updatedAt
     )
 }

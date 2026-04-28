@@ -49,7 +49,7 @@ fun AnimeDetailsScreen(
     val state = viewModel.state.collectAsStateWithLifecycle()
 
     LaunchedEffect(animeId) {
-        viewModel.handleIntent(AnimeDetailsIntent.FetchData(animeId.orEmpty()))
+        viewModel.handleIntent(AnimeDetailsIntent.GetData(animeId.orEmpty()))
     }
 
     LaunchedEffect(viewModel) {

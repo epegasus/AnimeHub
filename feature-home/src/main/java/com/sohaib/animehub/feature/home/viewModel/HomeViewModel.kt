@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sohaib.animehub.core.common.constants.Constants.TAG
 import com.sohaib.animehub.domain.useCases.GetAnimeListUseCase
+import com.sohaib.animehub.domain.useCases.RefreshAnimeListUseCase
 import com.sohaib.animehub.feature.home.effect.HomeEffect
 import com.sohaib.animehub.feature.home.intent.HomeIntent
 import com.sohaib.animehub.feature.home.state.HomeState
@@ -15,10 +16,14 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class HomeViewModel(private val useCase: GetAnimeListUseCase) : ViewModel() {
+class HomeViewModel(
+    private val getUseCase: GetAnimeListUseCase,
+    private val refreshUseCase: RefreshAnimeListUseCase,
+) : ViewModel() {
 
     private val _state = MutableStateFlow(HomeState())
     val state: StateFlow<HomeState> = _state.asStateFlow()
@@ -31,31 +36,30 @@ class HomeViewModel(private val useCase: GetAnimeListUseCase) : ViewModel() {
     }
 
     init {
-        handleIntent(HomeIntent.FetchData)
+        handleIntent(HomeIntent.GetData)
     }
 
     fun handleIntent(intent: HomeIntent) = viewModelScope.launch(coroutineExceptionHandler) {
         when (intent) {
-            HomeIntent.FetchData -> fetchData()
-            HomeIntent.RefreshData -> fetchData()
+            HomeIntent.GetData -> getData()
+            HomeIntent.RefreshData -> refreshUseCase.invoke()
             is HomeIntent.OnItemClick -> _effect.emit(HomeEffect.NavigateToDetailPage(intent.animeId))
         }
     }
 
-    private suspend fun fetchData() {
+    private suspend fun getData() {
         _state.update { it.copy(isLoading = true, isError = false) }
 
-        try {
-            val list = useCase()
-            if (list.isEmpty()) {
-                _state.update { it.copy(isLoading = false, isEmpty = true) }
-                return
+        getUseCase()
+            .catch { handleError(it) }
+            .collect { list ->
+                if (list.isEmpty()) {
+                    _state.update { it.copy(isLoading = false, isEmpty = true) }
+                    return@collect
+                }
+                Log.d(TAG, "HomeViewModel: fetchData: Total Size = ${list.size}")
+                _state.update { it.copy(isLoading = false, isEmpty = false, animeList = list) }
             }
-            Log.d(TAG, "HomeViewModel: fetchData: Total Size = ${list.size}")
-            _state.update { it.copy(isLoading = false, isEmpty = false, animeList = list) }
-        } catch (ex: Exception) {
-            handleError(ex)
-        }
     }
 
     private fun handleError(throwable: Throwable) = viewModelScope.launch {

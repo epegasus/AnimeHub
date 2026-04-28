@@ -155,7 +155,7 @@ fun AnimeItem(
     ) {
         Box {
             AsyncImage(
-                model = anime.smallImageUrl,
+                model = anime.imageUrl,
                 contentDescription = anime.title,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
@@ -186,22 +186,22 @@ private fun HomeScreenPrev() {
                 Anime(
                     id = "0",
                     title = "Naruto",
-                    smallImageUrl = "",
+                    imageUrl = "",
                 ),
                 Anime(
                     id = "1",
                     title = "Naruto",
-                    smallImageUrl = "",
+                    imageUrl = "",
                 ),
                 Anime(
                     id = "2",
                     title = "Naruto",
-                    smallImageUrl = "",
+                    imageUrl = "",
                 ),
                 Anime(
                     id = "3",
                     title = "Naruto",
-                    smallImageUrl = "",
+                    imageUrl = "",
                 ),
             )
         ),

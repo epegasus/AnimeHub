@@ -1,6 +1,7 @@
 package com.sohaib.animehub.di
 
 import com.sohaib.animehub.core.common.di.coreCommonModule
+import com.sohaib.animehub.core.database.di.coreDatabaseModule
 import com.sohaib.animehub.core.network.di.coreNetworkModule
 import com.sohaib.animehub.data.di.dataSourceModule
 import com.sohaib.animehub.data.di.repositoriesModule
@@ -13,6 +14,7 @@ class KoinModules {
 
     private val coreList = listOf(
         coreCommonModule,
+        coreDatabaseModule,
         coreNetworkModule
     )
     private val dataList = listOf(
