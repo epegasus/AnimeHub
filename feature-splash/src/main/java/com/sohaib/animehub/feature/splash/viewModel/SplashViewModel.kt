@@ -41,11 +41,13 @@ class SplashViewModel : ViewModel() {
     }
 
     private suspend fun startTimer() {
+        delay(800)
         _state.update { it.copy(isLoading = true) }
 
         delay(1000)
 
         _state.update { it.copy(isLoading = false) }
+        delay(800)
         _effect.emit(SplashEffect.NavigateToDashboard)
     }
 

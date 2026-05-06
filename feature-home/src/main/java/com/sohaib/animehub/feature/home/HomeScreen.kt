@@ -1,5 +1,11 @@
 package com.sohaib.animehub.feature.home
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -75,14 +81,22 @@ private fun HomeScreenContent(
     Box(
         modifier = modifier.fillMaxSize()
     ) {
-        when (val uiState = state.uiState) {
-            HomeUiState.Loading -> HomeScreenLoadingState()
-            HomeUiState.Empty -> HomeScreenEmptyState()
-            is HomeUiState.Error -> HomeScreenErrorState(uiState.messageResId, onRetryClicked)
-            is HomeUiState.Success -> HomeScreenSuccessState(list = uiState.animeList, onCardClick = onCardClick)
+        AnimatedContent(
+            targetState = state.uiState
+        ) { uiState ->
+            when (uiState) {
+                HomeUiState.Loading -> HomeScreenLoadingState()
+                HomeUiState.Empty -> HomeScreenEmptyState()
+                is HomeUiState.Error -> HomeScreenErrorState(uiState.messageResId, onRetryClicked)
+                is HomeUiState.Success -> HomeScreenSuccessState(list = uiState.animeList, onCardClick = onCardClick)
+            }
         }
 
-        if (state.isRefreshing) {
+        AnimatedVisibility(
+            visible = state.isRefreshing,
+            enter = fadeIn() + scaleIn(),
+            exit = fadeOut() + scaleOut()
+        ) {
             LinearProgressIndicator(
                 modifier = Modifier
                     .fillMaxWidth()

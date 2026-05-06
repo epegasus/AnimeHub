@@ -1,5 +1,10 @@
 package com.sohaib.animehub.feature.splash
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -52,7 +57,7 @@ private fun ScreenScreenContent(
         color = MaterialTheme.colorScheme.primary
     ) {
         Column(
-            modifier = modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceEvenly
         ) {
@@ -60,7 +65,11 @@ private fun ScreenScreenContent(
                 text = stringResource(R.string.app_name),
                 style = MaterialTheme.typography.headlineLarge
             )
-            if (state.isLoading) {
+            AnimatedVisibility(
+                visible = state.isLoading,
+                enter = fadeIn() + scaleIn(),
+                exit = fadeOut() + scaleOut()
+            ) {
                 CircularProgressIndicator(
                     color = MaterialTheme.colorScheme.onPrimary
                 )
