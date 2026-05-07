@@ -45,19 +45,15 @@ class HomeViewModel(
 
     init {
         handleIntent(HomeIntent.GetData)
+        handleIntent(HomeIntent.RefreshData)
     }
 
     fun handleIntent(intent: HomeIntent) = viewModelScope.launch(coroutineExceptionHandler) {
         when (intent) {
-            HomeIntent.GetData -> getData()
+            HomeIntent.GetData -> observeAnimeList()
             HomeIntent.RefreshData -> refreshAnimeList()
             is HomeIntent.OnItemClick -> _effect.emit(HomeEffect.NavigateToDetailPage(intent.animeId))
         }
-    }
-
-    private suspend fun getData() {
-        observeAnimeList()
-        refreshAnimeList()
     }
 
     private fun observeAnimeList() {

@@ -38,6 +38,10 @@ dependencies {
     // Android Core
     implementation(libs.androidx.core.ktx)
 
+    // Paging 3
+    implementation(libs.androidx.paging.common)
+    implementation(libs.androidx.paging.compose)
+
     // Koin
     implementation(platform(libs.koin.bom))
     implementation(libs.koin.core)

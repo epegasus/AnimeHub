@@ -20,6 +20,9 @@ navigationCompose = "2.9.8"
 # Coil - Image loader
 coilCompose = "3.4.0"
 
+# Paging
+paging = "3.5.0"
+
 # Retrofit
 retrofit = "3.0.0"
 loggingInterceptor = "5.3.2"
@@ -66,6 +69,10 @@ androidx-navigation-compose = { group = "androidx.navigation", name = "navigatio
 # Coil - Image loader
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coilCompose" }
 coil-network-okhttp = { module = "io.coil-kt.coil3:coil-network-okhttp", version.ref = "coilCompose" }
+
+# Paging 3
+androidx-paging-common = { module = "androidx.paging:paging-common", version.ref = "paging" }
+androidx-paging-compose = { module = "androidx.paging:paging-compose", version.ref = "paging" }
 
 # Retrofit
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
