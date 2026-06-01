@@ -8,7 +8,7 @@ import org.koin.dsl.lazyModule
 
 val dataSourceModule = lazyModule {
     // Local DataSource
-    single { AnimeLocalDataSource(get(), get()) }
+    single { AnimeLocalDataSource(get()) }
 
     // Remote DataSource
     single { AnimeRemoteDataSource(get()) }

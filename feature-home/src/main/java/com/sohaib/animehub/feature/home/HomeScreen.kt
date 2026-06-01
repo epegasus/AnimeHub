@@ -1,10 +1,5 @@
 package com.sohaib.animehub.feature.home
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -20,10 +15,12 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
@@ -34,21 +31,17 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
 import coil3.compose.AsyncImage
-import com.sohaib.animehub.domain.errors.DomainError
 import com.sohaib.animehub.domain.models.Anime
 import com.sohaib.animehub.feature.home.effect.HomeEffect
 import com.sohaib.animehub.feature.home.intent.HomeIntent
+import com.sohaib.animehub.feature.home.state.HomeListUiState
+import com.sohaib.animehub.feature.home.state.toHomeListUiState
 import com.sohaib.animehub.feature.home.viewModel.HomeViewModel
 import org.koin.androidx.compose.koinViewModel
-import java.io.IOException
-import java.net.ConnectException
-import java.net.SocketTimeoutException
-import java.net.UnknownHostException
 import com.sohaib.animehub.core.common.R as commonR
 
 @Composable
@@ -62,6 +55,7 @@ fun HomeScreen(
     LaunchedEffect(viewModel) {
         viewModel.effect.collect { effect ->
             when (effect) {
+                HomeEffect.RefreshAnimeList -> pagingItems.refresh()
                 is HomeEffect.NavigateToDetailPage -> onNavigateToDetailPage(effect.animeId)
             }
         }
@@ -71,7 +65,8 @@ fun HomeScreen(
         modifier = modifier,
         pagingItems = pagingItems,
         onCardClick = { viewModel.handleIntent(HomeIntent.OnItemClick(it)) },
-        onRetryClicked = { pagingItems.refresh() },
+        onRefresh = { viewModel.handleIntent(HomeIntent.Refresh) },
+        onRetryClicked = { viewModel.handleIntent(HomeIntent.Refresh) },
     )
 }
 
@@ -80,49 +75,35 @@ private fun HomeScreenContent(
     modifier: Modifier = Modifier,
     pagingItems: LazyPagingItems<Anime>,
     onCardClick: (String) -> Unit,
+    onRefresh: () -> Unit,
     onRetryClicked: () -> Unit,
 ) {
-    val refreshState = pagingItems.loadState.refresh
-    val isInitialLoading = refreshState is LoadState.Loading && pagingItems.itemCount == 0
-    val initialError = refreshState as? LoadState.Error
-    val isInitialError = initialError != null && pagingItems.itemCount == 0
-    val isEmpty = refreshState is LoadState.NotLoading &&
-            pagingItems.itemCount == 0 &&
-            pagingItems.loadState.append.endOfPaginationReached
+    val uiState = pagingItems.toHomeListUiState()
 
     Box(modifier = modifier.fillMaxSize()) {
-        when {
-            isInitialLoading -> HomeScreenLoadingState()
-            isInitialError -> HomeScreenErrorState(
-                messageResId = initialError.error.toUiMessageRes(),
-                onRetryClicked = onRetryClicked,
+        when (uiState) {
+            HomeListUiState.FirstTimeLoading -> HomeFirstTimeLoadingContent()
+            HomeListUiState.Empty -> HomeEmptyContent()
+            is HomeListUiState.Error -> HomeErrorContent(messageResId = uiState.messageResId, onRetryClicked = onRetryClicked)
+            is HomeListUiState.Success -> HomeSuccessContent(
+                pagingItems = pagingItems,
+                isRefreshing = uiState.isRefreshing,
+                isLoadingMore = uiState.isLoadingMore,
+                onCardClick = onCardClick,
+                onRefresh = onRefresh,
             )
-
-            isEmpty -> HomeScreenEmptyState()
-            else -> HomeScreenSuccessState(pagingItems = pagingItems, onCardClick = onCardClick)
         }
 
-        AnimatedVisibility(
-            visible = refreshState is LoadState.Loading && pagingItems.itemCount > 0,
-            enter = fadeIn() + scaleIn(),
-            exit = fadeOut() + scaleOut(),
-            modifier = Modifier.align(Alignment.TopCenter),
-        ) {
-            LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
-        }
-
-        if (pagingItems.loadState.append is LoadState.Loading) {
-            CircularProgressIndicator(
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(16.dp),
-            )
+        if (uiState is HomeListUiState.Success && uiState.isRefreshing) {
+            LinearProgressIndicator(modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.TopCenter))
         }
     }
 }
 
 @Composable
-private fun HomeScreenLoadingState() {
+private fun HomeFirstTimeLoadingContent() {
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -134,7 +115,19 @@ private fun HomeScreenLoadingState() {
 }
 
 @Composable
-private fun HomeScreenErrorState(
+private fun HomeEmptyContent() {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(text = stringResource(commonR.string.no_data_found), textAlign = TextAlign.Center)
+    }
+}
+
+@Composable
+private fun HomeErrorContent(
     messageResId: Int,
     onRetryClicked: () -> Unit,
 ) {
@@ -153,20 +146,40 @@ private fun HomeScreenErrorState(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun HomeScreenEmptyState() {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp),
-        contentAlignment = Alignment.Center,
-    ) {
-        Text(text = stringResource(commonR.string.no_data_found), textAlign = TextAlign.Center)
+private fun HomeSuccessContent(
+    pagingItems: LazyPagingItems<Anime>,
+    isRefreshing: Boolean,
+    isLoadingMore: Boolean,
+    onCardClick: (String) -> Unit,
+    onRefresh: () -> Unit,
+) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        PullToRefreshBox(
+            isRefreshing = isRefreshing,
+            onRefresh = onRefresh,
+            modifier = Modifier.fillMaxSize(),
+            indicator = {},
+        ) {
+            HomeAnimeGrid(
+                pagingItems = pagingItems,
+                onCardClick = onCardClick,
+            )
+        }
+
+        if (isLoadingMore) {
+            CircularProgressIndicator(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(16.dp),
+            )
+        }
     }
 }
 
 @Composable
-private fun HomeScreenSuccessState(
+private fun HomeAnimeGrid(
     pagingItems: LazyPagingItems<Anime>,
     onCardClick: (String) -> Unit,
 ) {
@@ -220,15 +233,6 @@ fun AnimeItem(
             )
         }
     }
-}
-
-private fun Throwable.toUiMessageRes(): Int = when (this) {
-    is DomainError.Server -> commonR.string.error_server
-    is DomainError.Client -> commonR.string.error_client
-    is DomainError.Unknown -> commonR.string.error_unknown
-    is DomainError.Network, is UnknownHostException, is ConnectException, is SocketTimeoutException -> commonR.string.error_network
-    is IOException -> commonR.string.error_network
-    else -> commonR.string.error_unknown
 }
 
 @Preview(showBackground = true)

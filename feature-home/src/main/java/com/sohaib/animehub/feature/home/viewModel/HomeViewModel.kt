@@ -22,6 +22,7 @@ class HomeViewModel(
 
     fun handleIntent(intent: HomeIntent) = viewModelScope.launch {
         when (intent) {
+            HomeIntent.Refresh -> _effect.emit(HomeEffect.RefreshAnimeList)
             is HomeIntent.OnItemClick -> _effect.emit(HomeEffect.NavigateToDetailPage(intent.animeId))
         }
     }

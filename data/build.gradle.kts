@@ -38,6 +38,9 @@ dependencies {
     // Android Core
     implementation(libs.androidx.core.ktx)
 
+    // Room (transactions in local data source)
+    implementation(libs.androidx.room.ktx)
+
     // Paging 3
     implementation(libs.androidx.paging.common)
     implementation(libs.androidx.paging.runtime)

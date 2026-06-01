@@ -7,9 +7,9 @@ import androidx.paging.PagingState
 import androidx.paging.RemoteMediator
 import com.sohaib.animehub.core.common.constants.Constants.TAG_DATABASE
 import com.sohaib.animehub.core.database.entities.AnimeEntity
+import com.sohaib.animehub.core.network.models.AnimeDTO
 import com.sohaib.animehub.data.dataSources.local.AnimeLocalDataSource
 import com.sohaib.animehub.data.dataSources.remote.AnimeRemoteDataSource
-import com.sohaib.animehub.core.network.models.AnimeDTO
 import com.sohaib.animehub.data.mapper.toEntity
 
 @OptIn(ExperimentalPagingApi::class)
@@ -32,33 +32,26 @@ class AnimeRemoteMediator(
                 }
             }
 
-            if (loadType == LoadType.REFRESH) {
-                localDataSource.clearPagingCache()
-            }
-
-            val response = remoteDataSource.getAnimeList(limit = AnimePagingConfig.PAGE_SIZE, offset = offset)
-            val entities = response.toEntity()
-
-            if (entities.isNotEmpty()) {
-                localDataSource.upsertAnimePage(entities)
-            }
-
-            val endOfPaginationReached = entities.isEmpty() || !response.hasNextPage()
-
-            val nextOffset = if (endOfPaginationReached) {
-                null
-            } else {
-                offset + entities.size
-            }
-            localDataSource.saveNextOffset(nextOffset)
-            Log.d(
-                TAG_DATABASE,
-                "AnimeRemoteMediator: load=$loadType offset=$offset fetched=${entities.size} nextOffset=$nextOffset end=$endOfPaginationReached",
+            // Network first — never hold a DB transaction during remote I/O.
+            val response = remoteDataSource.getAnimeList(
+                limit = AnimePagingConfig.PAGE_SIZE,
+                offset = offset,
             )
+            val entities = response.toEntity()
+            val endOfPaginationReached = entities.isEmpty() || !response.hasNextPage()
+            val nextOffset = if (endOfPaginationReached) null else offset + entities.size
+
+            localDataSource.applyPagedRemoteResponse(
+                isRefresh = loadType == LoadType.REFRESH,
+                entities = entities,
+                nextOffset = nextOffset,
+            )
+
+            Log.d(TAG_DATABASE, "AnimeRemoteMediator: load=$loadType offset=$offset fetched=${entities.size} nextOffset=$nextOffset end=$endOfPaginationReached")
+
             MediatorResult.Success(endOfPaginationReached = endOfPaginationReached)
         } catch (throwable: Throwable) {
             Log.e(TAG_DATABASE, "AnimeRemoteMediator: load failed", throwable)
-            // Do not mark pagination complete on transient network errors; allow retry/append.
             MediatorResult.Error(throwable)
         }
     }
