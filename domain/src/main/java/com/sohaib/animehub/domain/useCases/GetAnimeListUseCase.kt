@@ -1,11 +1,12 @@
 package com.sohaib.animehub.domain.useCases
 
+import androidx.paging.PagingData
 import com.sohaib.animehub.domain.models.Anime
 import com.sohaib.animehub.domain.repositories.AnimeRepository
 import kotlinx.coroutines.flow.Flow
 
 class GetAnimeListUseCase(private val repository: AnimeRepository) {
 
-    operator fun invoke(): Flow<List<Anime>> = repository.getAnimeList()
+    operator fun invoke(): Flow<PagingData<Anime>> = repository.getAnimeListPaging()
 
 }
