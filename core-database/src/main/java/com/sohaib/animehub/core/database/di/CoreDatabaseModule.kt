@@ -12,8 +12,11 @@ val coreDatabaseModule = lazyModule {
                 context = androidContext(),
                 klass = AppDatabase::class.java,
                 name = "animehub_db"
-            ).build()
+            )
+            .fallbackToDestructiveMigration(dropAllTables = true)
+            .build()
     }
 
     single { get<AppDatabase>().animeDao() }
+    single { get<AppDatabase>().animeRemoteKeysDao() }
 }

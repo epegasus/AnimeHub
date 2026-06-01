@@ -1,11 +1,17 @@
 package com.sohaib.animehub.data.repositories
 
-import android.util.Log
-import com.sohaib.animehub.core.common.constants.Constants.TAG_DATABASE
+import androidx.paging.ExperimentalPagingApi
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import androidx.paging.map
 import com.sohaib.animehub.data.dataSources.local.AnimeLocalDataSource
 import com.sohaib.animehub.data.dataSources.remote.AnimeRemoteDataSource
 import com.sohaib.animehub.data.mapper.toDomain
 import com.sohaib.animehub.data.mapper.toEntity
+import com.sohaib.animehub.data.paging.AnimePagingConfig
+import com.sohaib.animehub.data.paging.AnimePagingSource
+import com.sohaib.animehub.data.paging.AnimeRemoteMediator
 import com.sohaib.animehub.domain.errors.DomainError
 import com.sohaib.animehub.domain.models.Anime
 import com.sohaib.animehub.domain.models.AnimeDetail
@@ -22,25 +28,31 @@ class AnimeRepositoryImpl(
     private val ioDispatchers: CoroutineDispatcher,
 ) : AnimeRepository {
 
-    override fun getAnimeList(): Flow<List<Anime>> = localDataSource.getAnimeList().map { it.toDomain() }
-
-    override fun getAnimeDetails(animeId: String): Flow<AnimeDetail?> = localDataSource.getAnimeDetails(animeId = animeId).map { it.toDomain() }
-
-    override suspend fun refreshAnimeList(): Unit = withContext(ioDispatchers) {
-        try {
-            val response = remoteDataSource.getAnimeList()
-            localDataSource.syncList(response.toEntity())
-            Log.d(TAG_DATABASE, "AnimeRepositoryImpl: refreshAnimeList: syncList: ${response.data.size} items")
-        } catch (throwable: Throwable) {
-            throw throwable.toDomainError()
+    @OptIn(ExperimentalPagingApi::class)
+    override fun getAnimeListPaging(): Flow<PagingData<Anime>> {
+        return Pager(
+            config = PagingConfig(
+                pageSize = AnimePagingConfig.PAGE_SIZE,
+                initialLoadSize = AnimePagingConfig.PAGE_SIZE * 3,
+                prefetchDistance = AnimePagingConfig.PREFETCH_DISTANCE,
+                enablePlaceholders = false,
+            ),
+            remoteMediator = AnimeRemoteMediator(
+                localDataSource = localDataSource,
+                remoteDataSource = remoteDataSource,
+            ),
+            pagingSourceFactory = { AnimePagingSource(localDataSource).create() },
+        ).flow.map { pagingData ->
+            pagingData.map { entity -> entity.toDomain() }
         }
     }
+
+    override fun getAnimeDetails(animeId: String): Flow<AnimeDetail?> = localDataSource.getAnimeDetails(animeId = animeId).map { it.toDomain() }
 
     override suspend fun refreshAnimeDetailById(animeId: String): Unit = withContext(ioDispatchers) {
         try {
             val detail = remoteDataSource.getAnimeDetails(animeId = animeId)
             localDataSource.upsertDetail(detail.toEntity())
-            Log.d(TAG_DATABASE, "AnimeRepositoryImpl: refreshAnimeDetailById: Upsert completed")
         } catch (throwable: Throwable) {
             throw throwable.toDomainError()
         }

@@ -8,13 +8,13 @@ import com.sohaib.animehub.domain.models.AnimeDetail
 
 /* --------------------------------------------- Room Entities --------------------------------------------- */
 
-fun List<AnimeEntity>.toDomain(): List<Anime> = map {
-    Anime(
-        id = it.id,
-        title = it.title,
-        imageUrl = it.posterImageLargeUrl
-    )
-}
+fun AnimeEntity.toDomain(): Anime = Anime(
+    id = id,
+    title = title,
+    imageUrl = posterImageLargeUrl,
+)
+
+fun List<AnimeEntity>.toDomain(): List<Anime> = map { it.toDomain() }
 
 
 fun AnimeEntity?.toDomain(): AnimeDetail? {

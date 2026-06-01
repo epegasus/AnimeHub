@@ -6,7 +6,7 @@ import com.sohaib.animehub.core.network.models.AnimeDetailDTO
 
 class AnimeRemoteDataSource(private val api: AnimeApiService) {
 
-    suspend fun getAnimeList(): AnimeDTO = api.getAnimeList()
+    suspend fun getAnimeList(limit: Int, offset: Int): AnimeDTO = api.getAnimeList(limit = limit, offset = offset)
 
     suspend fun getAnimeDetails(animeId: String): AnimeDetailDTO = api.getAnimeDetails(animeId = animeId)
 

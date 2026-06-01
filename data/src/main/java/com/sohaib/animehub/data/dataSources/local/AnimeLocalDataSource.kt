@@ -1,33 +1,47 @@
 package com.sohaib.animehub.data.dataSources.local
 
 import com.sohaib.animehub.core.database.daos.AnimeDao
+import com.sohaib.animehub.core.database.daos.AnimeRemoteKeysDao
 import com.sohaib.animehub.core.database.entities.AnimeEntity
+import com.sohaib.animehub.core.database.entities.AnimeRemoteKeysEntity
 import kotlinx.coroutines.flow.Flow
 
-class AnimeLocalDataSource(private val dao: AnimeDao) {
+class AnimeLocalDataSource(
+    private val animeDao: AnimeDao,
+    private val remoteKeysDao: AnimeRemoteKeysDao,
+) {
 
-    fun getAnimeList(): Flow<List<AnimeEntity>> = dao.getAllAnimes()
+    /* ------------------------------------------ AnimeDao ------------------------------------------ */
 
-    fun getAnimeDetails(animeId: String): Flow<AnimeEntity?> = dao.getAnimeById(animeId = animeId)
+    suspend fun upsertAnimePage(entities: List<AnimeEntity>) {
+        if (entities.isEmpty()) return
 
-    suspend fun syncList(list: List<AnimeEntity>) {
-        if (list.isEmpty()) return
-
-        // 1️⃣ insert new items
-        dao.insertIgnore(list)
-
-        // 2️⃣ update only list fields (safe)
-        list.forEach {
-            dao.updateListFields(
-                id = it.id,
-                title = it.title,
-                posterImageLargeUrl = it.posterImageLargeUrl
+        animeDao.insertIgnore(entities)
+        entities.forEach { entity ->
+            animeDao.updateListFields(
+                id = entity.id,
+                title = entity.title,
+                posterImageLargeUrl = entity.posterImageLargeUrl,
             )
         }
-
-        // 3️⃣ optional cleanup
-        dao.deleteNotIn(list.map { it.id })
     }
 
-    suspend fun upsertDetail(anime: AnimeEntity) = dao.upsertAnime(anime)
+    suspend fun upsertDetail(anime: AnimeEntity) = animeDao.upsertAnime(anime)
+
+    fun getAnimeDetails(animeId: String): Flow<AnimeEntity?> = animeDao.getAnimeById(animeId = animeId)
+
+    fun getAnimePagingSource() = animeDao.getAnimePagingSource()
+
+    suspend fun getAnimeCount(): Int = animeDao.getAnimeCount()
+
+    /* ------------------------------------------ RemoteKeysDao ------------------------------------------ */
+
+    suspend fun getNextOffset(): Int? = remoteKeysDao.getRemoteKeys()?.nextOffset
+
+    suspend fun saveNextOffset(nextOffset: Int?) = remoteKeysDao.insertRemoteKeys(AnimeRemoteKeysEntity(nextOffset = nextOffset))
+
+    suspend fun clearPagingCache() {
+        animeDao.clearAll()
+        remoteKeysDao.clearAll()
+    }
 }

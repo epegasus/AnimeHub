@@ -1,6 +1,5 @@
 package com.sohaib.animehub.feature.home
 
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -19,7 +18,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.LinearProgressIndicator
@@ -36,15 +34,21 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.paging.LoadState
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.itemKey
 import coil3.compose.AsyncImage
+import com.sohaib.animehub.domain.errors.DomainError
 import com.sohaib.animehub.domain.models.Anime
 import com.sohaib.animehub.feature.home.effect.HomeEffect
 import com.sohaib.animehub.feature.home.intent.HomeIntent
-import com.sohaib.animehub.feature.home.state.HomeState
-import com.sohaib.animehub.feature.home.state.HomeUiState
 import com.sohaib.animehub.feature.home.viewModel.HomeViewModel
 import org.koin.androidx.compose.koinViewModel
+import java.io.IOException
+import java.net.ConnectException
+import java.net.SocketTimeoutException
+import java.net.UnknownHostException
 import com.sohaib.animehub.core.common.R as commonR
 
 @Composable
@@ -53,7 +57,7 @@ fun HomeScreen(
     viewModel: HomeViewModel = koinViewModel(),
     onNavigateToDetailPage: (String) -> Unit,
 ) {
-    val state = viewModel.state.collectAsStateWithLifecycle()
+    val pagingItems = viewModel.animePagingFlow.collectAsLazyPagingItems()
 
     LaunchedEffect(viewModel) {
         viewModel.effect.collect { effect ->
@@ -65,42 +69,53 @@ fun HomeScreen(
 
     HomeScreenContent(
         modifier = modifier,
-        state = state.value,
+        pagingItems = pagingItems,
         onCardClick = { viewModel.handleIntent(HomeIntent.OnItemClick(it)) },
-        onRetryClicked = { viewModel.handleIntent(HomeIntent.RefreshData) }
+        onRetryClicked = { pagingItems.refresh() },
     )
 }
 
 @Composable
 private fun HomeScreenContent(
     modifier: Modifier = Modifier,
-    state: HomeState,
+    pagingItems: LazyPagingItems<Anime>,
     onCardClick: (String) -> Unit,
     onRetryClicked: () -> Unit,
 ) {
-    Box(
-        modifier = modifier.fillMaxSize()
-    ) {
-        AnimatedContent(
-            targetState = state.uiState
-        ) { uiState ->
-            when (uiState) {
-                HomeUiState.Loading -> HomeScreenLoadingState()
-                HomeUiState.Empty -> HomeScreenEmptyState()
-                is HomeUiState.Error -> HomeScreenErrorState(uiState.messageResId, onRetryClicked)
-                is HomeUiState.Success -> HomeScreenSuccessState(list = uiState.animeList, onCardClick = onCardClick)
-            }
+    val refreshState = pagingItems.loadState.refresh
+    val isInitialLoading = refreshState is LoadState.Loading && pagingItems.itemCount == 0
+    val initialError = refreshState as? LoadState.Error
+    val isInitialError = initialError != null && pagingItems.itemCount == 0
+    val isEmpty = refreshState is LoadState.NotLoading &&
+            pagingItems.itemCount == 0 &&
+            pagingItems.loadState.append.endOfPaginationReached
+
+    Box(modifier = modifier.fillMaxSize()) {
+        when {
+            isInitialLoading -> HomeScreenLoadingState()
+            isInitialError -> HomeScreenErrorState(
+                messageResId = initialError.error.toUiMessageRes(),
+                onRetryClicked = onRetryClicked,
+            )
+
+            isEmpty -> HomeScreenEmptyState()
+            else -> HomeScreenSuccessState(pagingItems = pagingItems, onCardClick = onCardClick)
         }
 
         AnimatedVisibility(
-            visible = state.isRefreshing,
+            visible = refreshState is LoadState.Loading && pagingItems.itemCount > 0,
             enter = fadeIn() + scaleIn(),
-            exit = fadeOut() + scaleOut()
+            exit = fadeOut() + scaleOut(),
+            modifier = Modifier.align(Alignment.TopCenter),
         ) {
-            LinearProgressIndicator(
+            LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+        }
+
+        if (pagingItems.loadState.append is LoadState.Loading) {
+            CircularProgressIndicator(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .align(Alignment.TopCenter)
+                    .align(Alignment.BottomCenter)
+                    .padding(16.dp),
             )
         }
     }
@@ -112,7 +127,7 @@ private fun HomeScreenLoadingState() {
         modifier = Modifier
             .fillMaxSize()
             .padding(24.dp),
-        contentAlignment = Alignment.Center
+        contentAlignment = Alignment.Center,
     ) {
         CircularProgressIndicator()
     }
@@ -128,13 +143,11 @@ private fun HomeScreenErrorState(
             .fillMaxSize()
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        verticalArrangement = Arrangement.Center,
     ) {
         Text(text = stringResource(messageResId), textAlign = TextAlign.Center)
         Spacer(modifier = Modifier.height(8.dp))
-        Button(
-            onClick = onRetryClicked
-        ) {
+        Button(onClick = onRetryClicked) {
             Text(text = stringResource(commonR.string.retry))
         }
     }
@@ -146,7 +159,7 @@ private fun HomeScreenEmptyState() {
         modifier = Modifier
             .fillMaxSize()
             .padding(24.dp),
-        contentAlignment = Alignment.Center
+        contentAlignment = Alignment.Center,
     ) {
         Text(text = stringResource(commonR.string.no_data_found), textAlign = TextAlign.Center)
     }
@@ -154,20 +167,22 @@ private fun HomeScreenEmptyState() {
 
 @Composable
 private fun HomeScreenSuccessState(
-    list: List<Anime>,
+    pagingItems: LazyPagingItems<Anime>,
     onCardClick: (String) -> Unit,
 ) {
     LazyVerticalGrid(
+        modifier = Modifier.fillMaxSize(),
         columns = GridCells.Fixed(2),
         contentPadding = PaddingValues(8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        items(list, key = { it.id }) { anime ->
-            AnimeItem(
-                anime = anime,
-                onCardClick = onCardClick
-            )
+        items(
+            count = pagingItems.itemCount,
+            key = pagingItems.itemKey { it.id },
+        ) { index ->
+            val anime = pagingItems[index] ?: return@items
+            AnimeItem(anime = anime, onCardClick = onCardClick)
         }
     }
 }
@@ -182,15 +197,14 @@ fun AnimeItem(
         modifier = modifier
             .fillMaxWidth()
             .aspectRatio(1f),
-        onClick = { onCardClick(anime.id) }
+        onClick = { onCardClick(anime.id) },
     ) {
         Box {
             AsyncImage(
                 model = anime.imageUrl,
                 contentDescription = anime.title,
                 contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .fillMaxSize()
+                modifier = Modifier.fillMaxSize(),
             )
             Text(
                 text = anime.title,
@@ -202,43 +216,26 @@ fun AnimeItem(
                     .fillMaxWidth()
                     .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.9f))
                     .padding(8.dp)
-                    .align(Alignment.BottomCenter)
+                    .align(Alignment.BottomCenter),
             )
         }
     }
 }
 
+private fun Throwable.toUiMessageRes(): Int = when (this) {
+    is DomainError.Server -> commonR.string.error_server
+    is DomainError.Client -> commonR.string.error_client
+    is DomainError.Unknown -> commonR.string.error_unknown
+    is DomainError.Network, is UnknownHostException, is ConnectException, is SocketTimeoutException -> commonR.string.error_network
+    is IOException -> commonR.string.error_network
+    else -> commonR.string.error_unknown
+}
+
 @Preview(showBackground = true)
 @Composable
 private fun HomeScreenPrev() {
-    HomeScreenContent(
-        state = HomeState(
-            uiState = HomeUiState.Success(
-                animeList = listOf(
-                    Anime(
-                        id = "0",
-                        title = "Naruto",
-                        imageUrl = "",
-                    ),
-                    Anime(
-                        id = "1",
-                        title = "Naruto",
-                        imageUrl = "",
-                    ),
-                    Anime(
-                        id = "2",
-                        title = "Naruto",
-                        imageUrl = "",
-                    ),
-                    Anime(
-                        id = "3",
-                        title = "Naruto",
-                        imageUrl = "",
-                    ),
-                )
-            )
-        ),
+    AnimeItem(
+        anime = Anime(id = "1", title = "Naruto", imageUrl = ""),
         onCardClick = {},
-        onRetryClicked = {}
     )
 }

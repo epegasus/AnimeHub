@@ -1,5 +1,6 @@
 package com.sohaib.animehub.core.database.daos
 
+import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
@@ -15,8 +16,11 @@ interface AnimeDao {
     /* -------------------------------- Reading Data -------------------------------- */
 
     @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
-    @Query("SELECT id, title, posterImageLargeUrl FROM table_anime")
-    fun getAllAnimes(): Flow<List<AnimeEntity>>
+    @Query("SELECT id, title, posterImageLargeUrl FROM table_anime ORDER BY id ASC")
+    fun getAnimePagingSource(): PagingSource<Int, AnimeEntity>
+
+    @Query("SELECT COUNT(*) FROM table_anime")
+    suspend fun getAnimeCount(): Int
 
     @Query("SELECT * FROM table_anime WHERE id = :animeId")
     fun getAnimeById(animeId: String): Flow<AnimeEntity?>
@@ -37,4 +41,7 @@ interface AnimeDao {
 
     @Query("DELETE FROM table_anime WHERE id NOT IN (:ids)")
     suspend fun deleteNotIn(ids: List<String>)
+
+    @Query("DELETE FROM table_anime")
+    suspend fun clearAll()
 }
